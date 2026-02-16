@@ -7,7 +7,7 @@ Pin mappings from the official [wuxx/icesugar](https://github.com/wuxx/icesugar)
 
 ## Hardware
 - **Board:** Muselab IceSugar v1.5 (iCE40UP5K, SG48 package)
-- **Programmer:** iCELink — USB mass-storage device, appears as drive letter (typically D:)
+- **Programmer:** iCELink (DAPLink v0254) — USB mass-storage device. Mounts as `/Volumes/iCELink` on Mac, drive letter (typically D:) on Windows
 - **Audio:** MuseLab PMOD Audio v1.2 on PMOD header 3 (speaker pin = FPGA pin 32)
 - **Serial:** UART TX=pin 6, RX=pin 4, bridged via iCELink USB-C (shares port with programmer)
 
@@ -21,18 +21,22 @@ Pin mappings from the official [wuxx/icesugar](https://github.com/wuxx/icesugar)
 
 ### Building
 ```bash
-# Always prefix with MSYS_NO_PATHCONV=1 on Git Bash (Windows)
+# Mac / Linux — no prefix needed
+docker compose run fpga make -C /workspace/examples/<name>
+
+# Windows (Git Bash) — prefix to prevent /workspace path mangling
 MSYS_NO_PATHCONV=1 docker compose run fpga make -C /workspace/examples/<name>
 ```
 
 ### Flashing
-The iCELink appears as a USB mass-storage drive. Flash by copying the .bin file:
+The iCELink appears as a USB mass-storage drive. Use `flash.sh` (handles both Mac and Linux):
 ```bash
-# Windows — find iCELink drive letter, copy .bin to it
-cmd //c "cd C:\Users\td0034\Projects\fpga && flash.bat build\<name>\top.bin"
+./flash.sh build/<name>/top.bin
+```
 
-# Or directly copy to drive (typically D:)
-cp build/<name>/top.bin /d/
+Windows alternative:
+```bash
+cmd //c "cd C:\Users\td0034\Projects\fpga && flash.bat build\<name>\top.bin"
 ```
 
 ### Docker
@@ -72,6 +76,13 @@ include /workspace/Makefile.inc
 - Verilog source files should have thorough comments explaining what/how/why
 - Top module is always named `top`
 - All examples use 12 MHz clock (`FREQ=12`)
+
+## macOS Notes
+- No `MSYS_NO_PATHCONV` prefix needed — Docker volume mounts work natively
+- iCELink mounts at `/Volumes/iCELink`
+- **CRITICAL: Do NOT use `cp` or `dd` to flash the iCELink.** macOS writes files non-sequentially, which breaks the DAPLink protocol (error: "File sent out of order by PC"). Use `cat file.bin > /Volumes/iCELink/top.bin` instead — this does a simple sequential write that DAPLink accepts. The `flash.sh` script handles this automatically.
+- After a successful flash the iCELink unmounts and remounts (brief "Permission denied" is normal)
+- If `FAIL.TXT` appears on the iCELink drive, the flash failed — check its contents for the error
 
 ## Windows / Git Bash Notes
 - Use `MSYS_NO_PATHCONV=1` prefix on docker commands to prevent `/workspace` path mangling

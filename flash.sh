@@ -12,7 +12,14 @@ fi
 # Detect iCELink mount point
 MOUNT=""
 if [ "$(uname)" = "Darwin" ]; then
-    MOUNT=$(find /Volumes -maxdepth 1 -iname "icelink" 2>/dev/null | head -1)
+    # Check exact name first (fast), then case-insensitive glob fallback
+    if [ -d "/Volumes/iCELink" ]; then
+        MOUNT="/Volumes/iCELink"
+    else
+        for d in /Volumes/[iI][cC][eE][lL][iI][nN][kK]; do
+            [ -d "$d" ] && MOUNT="$d" && break
+        done
+    fi
 else
     MOUNT=$(lsblk -o MOUNTPOINT,LABEL 2>/dev/null | awk '/iCELink/{print $1}' | head -1)
     if [ -z "$MOUNT" ]; then
@@ -32,6 +39,12 @@ if [ -z "$MOUNT" ]; then
 fi
 
 echo "Flashing $BIN -> $MOUNT"
-cp "$BIN" "$MOUNT/"
-sync
+if [ "$(uname)" = "Darwin" ]; then
+    # macOS writes files non-sequentially, which breaks DAPLink programming.
+    # cat redirection does a simple sequential write that DAPLink accepts.
+    cat "$BIN" > "$MOUNT/top.bin"
+else
+    cp "$BIN" "$MOUNT/"
+    sync
+fi
 echo "Done."
