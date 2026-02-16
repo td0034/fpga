@@ -1,0 +1,8 @@
+services:
+  fpga:
+    build: .
+    volumes:
+      - ./projects:/workspace
+      - ./build:/build
+      - ./Makefile:/workspace/Makefile.inc:ro
+    working_dir: /workspace

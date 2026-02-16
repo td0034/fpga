@@ -1,0 +1,14 @@
+# I2S output — IceSugar v1.5 + PCM5102A DAC on PMOD 3
+# Clock
+set_io clk       35
+
+# I2S signals to PCM5102A (directly on PMOD 3 pins)
+# BCK  ← BCLK  (bit clock)
+# DIN  ← DATA  (serial audio data)
+# LCK  ← LRCK  (left/right word select)
+set_io i2s_bclk  34
+set_io i2s_data  31
+set_io i2s_lrck  27
+
+# Heartbeat LED
+set_io led_g     41

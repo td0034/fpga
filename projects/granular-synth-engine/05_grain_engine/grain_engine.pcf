@@ -1,0 +1,25 @@
+# Grain engine — SPI (PMOD 2) + ADC & DAC (PMOD 3)
+# Clock
+set_io clk        35
+
+# SPI bus on PMOD 2
+set_io spi_sck    46
+set_io spi_mosi   44
+set_io spi_miso   42
+set_io spi_cs_n   37
+
+# I2S shared (PMOD 3 top row)
+set_io i2s_bclk   34
+set_io i2s_lrck   27
+
+# PCM5102A DAC (PMOD 3 top row)
+set_io dac_data   31
+
+# PCM1808 ADC (PMOD 3 bottom row)
+set_io adc_scki   23
+set_io adc_data   26
+
+# LEDs
+set_io led_g      41
+set_io led_r      40
+set_io led_b      39

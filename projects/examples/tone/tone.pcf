@@ -1,0 +1,4 @@
+# Tone example — IceSugar v1.5 + PMOD Audio v1.2 on PMOD 3
+set_io clk     35
+set_io speaker 32
+set_io led_g   41

@@ -1,0 +1,18 @@
+# I2S passthrough — PCM1808 ADC (PMOD 2) → PCM5102A DAC (PMOD 3)
+# Clock
+set_io clk        35
+
+# I2S shared signals (active accent accent accent accent accent)
+set_io i2s_bclk   34
+set_io i2s_lrck   27
+
+# PCM5102A DAC on PMOD 3
+set_io dac_data   31
+
+# PCM1808 ADC on PMOD 2
+set_io adc_data   44
+set_io adc_scki   46
+
+# LEDs
+set_io led_g      41
+set_io led_r      40

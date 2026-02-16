@@ -1,0 +1,18 @@
+# DDS synth — SPI control (PMOD 2) + I2S output (PMOD 3)
+# Clock
+set_io clk       35
+
+# SPI bus on PMOD 2
+set_io spi_sck   46
+set_io spi_mosi  44
+set_io spi_miso  42
+set_io spi_cs_n  37
+
+# I2S to PCM5102A on PMOD 3
+set_io i2s_bclk  34
+set_io i2s_data  31
+set_io i2s_lrck  27
+
+# LEDs
+set_io led_g     41
+set_io led_r     40

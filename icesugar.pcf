@@ -1,0 +1,56 @@
+# IceSugar v1.5 Pin Constraints (iCE40UP5K-QFN48)
+# Reference: https://github.com/wuxx/icesugar src/common/io.pcf
+
+# 12 MHz oscillator
+set_io clk 35
+
+# On-board RGB LED (active low)
+set_io led_r 40
+set_io led_g 41
+set_io led_b 39
+
+# User switches
+set_io sw0 18
+set_io sw1 19
+set_io sw2 20
+set_io sw3 21
+
+# UART
+set_io uart_rx 4
+set_io uart_tx 6
+
+# PMOD 1 (shares pins with UART and USB — avoid if using serial)
+set_io P1_1  10
+set_io P1_2  6
+set_io P1_3  3
+set_io P1_4  48
+set_io P1_9  47
+set_io P1_10 2
+set_io P1_11 4
+set_io P1_12 9
+
+# PMOD 2 (active accent — no conflicts)
+set_io P2_1  46
+set_io P2_2  44
+set_io P2_3  42
+set_io P2_4  37
+set_io P2_9  36
+set_io P2_10 38
+set_io P2_11 43
+set_io P2_12 45
+
+# PMOD 3 (no conflicts — used by audio examples)
+set_io P3_1  34
+set_io P3_2  31
+set_io P3_3  27
+set_io P3_4  25
+set_io P3_9  23
+set_io P3_10 26
+set_io P3_11 28
+set_io P3_12 32
+
+# PMOD 4 (half-width — shares pins with switches)
+set_io P4_1 21
+set_io P4_2 20
+set_io P4_3 19
+set_io P4_4 18

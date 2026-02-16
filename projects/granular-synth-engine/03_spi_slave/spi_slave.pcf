@@ -1,0 +1,14 @@
+# SPI slave — ESP32-S3 → FPGA register interface via PMOD 2
+# Clock
+set_io clk       35
+
+# SPI bus on PMOD 2
+set_io spi_sck   46
+set_io spi_mosi  44
+set_io spi_miso  42
+set_io spi_cs_n  37
+
+# RGB LED
+set_io led_r     40
+set_io led_g     41
+set_io led_b     39

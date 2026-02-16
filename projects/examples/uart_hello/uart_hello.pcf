@@ -1,0 +1,5 @@
+# UART Hello — IceSugar v1.5
+# TX pin 6 goes to the iCELink USB-serial bridge → appears as COM port on host
+set_io clk     35
+set_io uart_tx 6
+set_io led_g   41

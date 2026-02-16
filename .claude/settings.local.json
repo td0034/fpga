@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose build:*)",
+      "Bash(docker compose run:*)",
+      "Bash(MSYS_NO_PATHCONV=1 docker compose:*)",
+      "Bash(cp build/*)",
+      "Bash(cp /c/Users/td0034/projects/fpga/build/*)",
+      "Bash(cmd //c*flash.bat*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:pages.hmc.edu)",
+      "WebFetch(domain:iot-kmutnb.github.io)",
+      "WebFetch(domain:gojimmypi.github.io)"
+    ]
+  }
+}
