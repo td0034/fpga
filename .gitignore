@@ -1,4 +1,4 @@
-# Build outputs (yosys / nextpnr / icepack)
+# Build outputs (per-board build/ directories)
 build/
 
 # Simulation artifacts
@@ -9,6 +9,9 @@ build/
 # Yosys intermediates
 *.blif
 *.edif
+
+# ECP5 intermediates
+*.config
 
 # OS junk
 Thumbs.db

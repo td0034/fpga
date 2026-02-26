@@ -1,266 +1,132 @@
-# IceSugar v1.5 Containerised Dev Environment
+# FPGA Projects
 
-Docker-based FPGA toolchain for the Muselab IceSugar v1.5 board (Lattice iCE40UP5K).
-Pin mappings sourced from the official [wuxx/icesugar](https://github.com/wuxx/icesugar) repository.
+Multi-board FPGA development environment. Native toolchain via [oss-cad-suite](https://github.com/YosysHQ/oss-cad-suite-build); Docker images available as a fallback.
 
-## Prerequisites
+## Boards
 
-- Docker & Docker Compose
-- IceSugar v1.5 board (for flashing)
-- MuseLab PMOD Audio v1.2 (for audio examples — plugs into PMOD header 3)
+| Board | FPGA | Clock | Directory |
+|-------|------|-------|-----------|
+| [Muselab iCESugar v1.5](https://github.com/wuxx/icesugar) | Lattice iCE40UP5K | 12 MHz | `icesugar/` |
+| [ULX3S 85F](https://github.com/emard/ulx3s) | Lattice ECP5 LFE5U-85F | 25 MHz | `ulx3s/` |
+
+## Examples
+
+### iCESugar (iCE40UP5K)
+
+| Example | Description |
+|---------|-------------|
+| `blinky` | RGB LED blinky — cycles through colours using a free-running counter |
+| `tone` | 440 Hz square wave output via PMOD Audio |
+| `sine_tone` | 440 Hz sine wave via PWM + 256-entry lookup table |
+| `uart_hello` | Sends "Hello, World!" repeatedly over UART at 9600 baud |
+| `sine_rgb` | Sine tone combined with an RGB colour wheel |
+
+#### granular-synth-engine (work in progress)
+
+| Stage | Description |
+|-------|-------------|
+| `01_i2s_out` | I2S digital audio output |
+| `02_i2s_passthrough` | I2S loopback (ADC → DAC passthrough) |
+| `03_spi_slave` | SPI slave for control parameter updates |
+| `04_dds_synth` | Direct digital synthesis oscillator |
+| `05_grain_engine` | Granular synthesis engine |
+
+### ULX3S (ECP5 LFE5U-85F)
+
+| Example | Description |
+|---------|-------------|
+| `blinky` | 8-LED binary counter driven from a 26-bit free-running counter |
+| `buttons` | Move a single LED across the bar with directional buttons |
+| `sdcard` | Read a 44.1 kHz 16-bit WAV from FAT32 SD card and play via 3.5mm jack |
 
 ## Quick Start
 
+### Prerequisites
+
+- **Native toolchain (preferred):** [oss-cad-suite](https://github.com/YosysHQ/oss-cad-suite-build) installed at `~/oss-cad-suite/` and sourced in your shell
+- **Docker** — fallback if native tools are unavailable
+- **iCESugar programmer:** iCELink USB mass-storage (built into board)
+- **ULX3S programmer:** `openFPGALoader` (`brew install openfpgaloader` on macOS)
+
+### Build
+
 ```bash
-# Build the toolchain image (first time takes ~20 min)
-docker compose build
+# iCESugar
+cd icesugar && make -C examples/<name>
 
-# Build an example
-docker compose run fpga make -C /workspace/examples/blinky
-
-# Flash to board (Windows)
-flash.bat build\blinky\top.bin
-
-# Flash to board (Linux/Mac)
-./flash.sh build/blinky/top.bin
+# ULX3S
+cd ulx3s && make -C examples/<name>
 ```
 
-> **Windows note:** If using Git Bash, prefix docker commands with
-> `MSYS_NO_PATHCONV=1` to prevent path mangling of `/workspace`.
+### Flash
 
-## Workflow
-
-All synthesis runs inside the container. The resulting `.bin` file lands in
-`build/<project>/` via a shared volume. You flash from the host by copying
-the `.bin` to the iCELink USB mass-storage drive.
-
-```
- Source files (projects/)          Build artifacts (build/)
-        │                                  │
-        ▼                                  ▼
-┌─────────────────────────────────────────────────┐
-│  Docker container                               │
-│                                                 │
-│  *.v ──► yosys ──► nextpnr-ice40 ──► icepack   │
-│          synth      place & route      bitstream│
-│         .json          .asc             .bin    │
-└─────────────────────────────────────────────────┘
-        │                                  │
-        │         shared volumes           │
-        ▼                                  ▼
-┌─────────────────────────────────────────────────┐
-│  Host                                           │
-│                                                 │
-│  flash.sh / flash.bat                           │
-│  copies .bin ──► iCELink USB drive ──► FPGA     │
-└─────────────────────────────────────────────────┘
-```
-
-### Step by step
-
-1. **Edit** your Verilog source in `projects/` (any editor on the host).
-2. **Build** inside the container:
-   ```bash
-   docker compose run fpga make -C /workspace/examples/blinky
-   ```
-3. **Flash** from the host:
-   ```bash
-   # Windows — the iCELink appears as a drive letter (e.g. D:)
-   flash.bat build\blinky\top.bin
-
-   # Linux/Mac — auto-detects the iCELink mount point
-   ./flash.sh build/blinky/top.bin
-   ```
-4. The iCELink programmer loads the bitstream automatically — no drivers needed.
-
-> **Note:** The iCELink programs via the USB-C port and also bridges UART to
-> a virtual COM port on the same connection. When flashing, you'll see
-> `@prog` / `@cdone` messages on the serial terminal — this is normal.
-
-### Build output
-
-Each example builds into its own subdirectory under `build/`, so examples
-don't clobber each other:
-
-```
-build/
-├── blinky/top.bin
-├── tone/top.bin
-├── sine_tone/top.bin
-├── uart_hello/top.bin
-└── sine_rgb/top.bin
-```
-
-You can switch between pre-built bitstreams instantly without recompiling:
 ```bash
-flash.bat build\sine_rgb\top.bin    # switch to sine + RGB
-flash.bat build\uart_hello\top.bin  # switch to UART
+# iCESugar — copies bitstream to iCELink mass-storage drive
+cd icesugar && ./flash.sh build/<name>/top.bin
+
+# ULX3S — loads into SRAM (volatile, lost on power-off)
+cd ulx3s && ./flash.sh build/<name>/top.bit
+
+# ULX3S — programs SPI flash (persistent, directly via openFPGALoader)
+openFPGALoader --board=ulx3s --write-flash build/<name>/top.bit
+```
+
+> **macOS iCELink note:** Do not use `cp` or `dd` — macOS writes non-sequentially and breaks DAPLink. `flash.sh` uses `cat` to write sequentially. If `FAIL.TXT` appears on the drive, the flash failed.
+
+### Docker fallback
+
+```bash
+cd icesugar && docker compose run fpga make -C examples/<name>
+cd ulx3s   && docker compose run fpga make -C examples/<name>
 ```
 
 ## Project Structure
 
 ```
 fpga/
-├── Dockerfile              # Toolchain (yosys 0.44, nextpnr 0.7, icestorm 1.1)
-├── docker-compose.yml      # Mounts projects/ → /workspace, build/ → /build
-├── Makefile                # Reusable build template (mounted as /workspace/Makefile.inc)
-├── icesugar.pcf            # Full pin constraints for IceSugar v1.5
-├── flash.sh                # Linux/Mac flash script
-├── flash.bat               # Windows flash script
-├── projects/               # ← mounted into container as /workspace
-│   └── examples/
-│       ├── blinky/         # RGB LED blinky
-│       ├── tone/           # 440 Hz square wave tone
-│       ├── sine_tone/      # 440 Hz sine wave tone (PWM + LUT)
-│       ├── uart_hello/     # UART serial "Hello from iCE40!"
-│       └── sine_rgb/       # Sine tone + RGB colour wheel (parallelism demo)
-└── build/                  # ← build output, one subdir per example
+├── icesugar/                     # iCESugar v1.5 (iCE40UP5K)
+│   ├── Makefile.inc              # iCE40 build template
+│   ├── icesugar.pcf              # Full board pin constraints
+│   ├── flash.sh / flash.bat
+│   ├── examples/
+│   │   ├── blinky/
+│   │   ├── tone/
+│   │   ├── sine_tone/
+│   │   ├── uart_hello/
+│   │   └── sine_rgb/
+│   └── granular-synth-engine/
+│       ├── 01_i2s_out/
+│       ├── 02_i2s_passthrough/
+│       ├── 03_spi_slave/
+│       ├── 04_dds_synth/
+│       └── 05_grain_engine/
+│
+└── ulx3s/                        # ULX3S 85F (ECP5 LFE5U-85F)
+    ├── Makefile.inc              # ECP5 build template
+    ├── ulx3s.lpf                 # Full board pin constraints
+    ├── flash.sh
+    └── examples/
+        ├── blinky/
+        ├── buttons/
+        └── sdcard/
 ```
 
-## Examples
-
-### blinky — RGB LED
-
-Cycles the onboard RGB LED through colours at ~1 Hz. The "hello world" of
-FPGA development — if the LED blinks, your toolchain and board are working.
-
-**Concepts:** clock divider, bit slicing, active-low outputs.
-
-```bash
-docker compose run fpga make -C /workspace/examples/blinky
-flash.bat build\blinky\top.bin
-```
-
-### tone — 440 Hz square wave (PMOD Audio v1.2)
-
-Generates a 440 Hz (A4) square wave on the speaker. Sounds buzzy — that's
-the nature of a square wave (rich in odd harmonics). Green LED blinks to
-show the design is running.
-
-**Concepts:** clock divider, frequency calculation from clock rate.
-
-```bash
-docker compose run fpga make -C /workspace/examples/tone
-flash.bat build\tone\top.bin
-```
-
-### sine_tone — 440 Hz sine wave (PMOD Audio v1.2)
-
-Plays the same A4 note but as a smooth sine wave using three stages:
-phase accumulator → 256-entry sine lookup table → 8-bit PWM output. Much
-cleaner sound than the square wave. Red LED glows to show PWM is working.
-
-**Concepts:** phase accumulator (DDS), lookup tables (ROM in LUTs), PWM
-as a crude DAC, the RC filter on the PMOD smoothing PWM into analog.
-
-```bash
-docker compose run fpga make -C /workspace/examples/sine_tone
-flash.bat build\sine_tone\top.bin
-```
-
-### uart_hello — Serial output
-
-Sends `Hello from iCE40!` over the USB serial port once per second. Open a
-serial terminal (PuTTY, minicom, Arduino serial monitor) at **115200 baud
-8N1** on the iCELink COM port. Green LED toggles with each message.
-
-**Concepts:** UART protocol (start/stop bits, baud rate), shift registers,
-state machines (idle → send → wait), ROM-based string storage.
-
-```bash
-docker compose run fpga make -C /workspace/examples/uart_hello
-flash.bat build\uart_hello\top.bin
-```
-
-> The iCELink's `@prog` / `@cdone` messages appear on the same serial port
-> before your design's output starts — this is the programmer's own debug
-> output sharing the UART pins.
-
-### sine_rgb — Sine tone + RGB colour wheel (parallelism demo)
-
-Plays a 440 Hz sine wave AND smoothly fades the RGB LED through the full
-colour wheel — both running truly in parallel. This demonstrates the key
-difference between FPGAs and microcontrollers: there's no main loop, no
-time-slicing. The audio circuit and LED circuit are physically separate
-hardware that happen to share one PWM counter.
-
-**Concepts:** FPGA parallelism, HSV-to-RGB conversion (6-segment hue
-decode), resource sharing (single PWM counter serving 4 outputs), combining
-independent subsystems.
-
-```bash
-docker compose run fpga make -C /workspace/examples/sine_rgb
-flash.bat build\sine_rgb\top.bin
-```
-
-## Pin Reference
-
-Pin mappings from [wuxx/icesugar `io.pcf`](https://github.com/wuxx/icesugar/blob/master/src/common/io.pcf):
-
-| Signal   | FPGA Pin | Notes                          |
-|----------|----------|--------------------------------|
-| clk      | 35       | 12 MHz oscillator (GBIN0 — dedicated clock input) |
-| LED_R    | 40       | Active low                     |
-| LED_G    | 41       | Active low                     |
-| LED_B    | 39       | Active low                     |
-| SW0-SW3  | 18-21    | Shared with PMOD 4             |
-| UART TX  | 6        | FPGA → PC (via iCELink USB-C)  |
-| UART RX  | 4        | PC → FPGA (via iCELink USB-C)  |
-| PMOD 1   | 10,6,3,48,47,2,4,9 | Shared with UART + USB — avoid |
-| PMOD 2   | 46,44,42,37,36,38,43,45 | No conflicts      |
-| PMOD 3   | 34,31,27,25,23,26,28,32 | No conflicts (audio examples use pin 32) |
-| PMOD 4   | 21,20,19,18 | Half-width, shared with switches |
-
-## Makefile Variables
-
-| Variable | Default        | Description              |
-|----------|----------------|--------------------------|
-| `TOP`    | `top`          | Top-level module name    |
-| `PCF`    | `icesugar.pcf` | Pin constraints file     |
-| `FREQ`   | `12`           | Clock frequency (MHz)    |
-| `SRC`    | `*.v`          | Verilog source files     |
-| `PROJECT`| dir name       | Build output subdirectory|
-
-## Make Targets
-
-| Target      | Description                              |
-|-------------|------------------------------------------|
-| `make all`  | Full build (synth + pnr + pack)          |
-| `make synth`| Yosys synthesis (.v -> .json)            |
-| `make pnr`  | nextpnr place & route (.json -> .asc)    |
-| `make pack` | icepack (.asc -> .bin)                   |
-| `make sim`  | iverilog + vvp simulation                |
-| `make clean`| Remove build artifacts                   |
-
-## Creating a New Project
-
-```bash
-mkdir -p projects/myproject
-```
-
-Create `myproject.v` with a `top` module and a `myproject.pcf` pin
-constraints file. Add a Makefile:
+## Adding a New Example
 
 ```makefile
-TOP  = top
-PCF  = myproject.pcf
-SRC  = myproject.v
-
-include /workspace/Makefile.inc
+# icesugar/examples/myproject/Makefile
+TOP = top
+PCF = myproject.pcf
+SRC = myproject.v
+include ../../Makefile.inc
 ```
 
-Build and flash:
-```bash
-docker compose run fpga make -C /workspace/myproject
-flash.bat build\myproject\top.bin
+```makefile
+# ulx3s/examples/myproject/Makefile
+TOP = top
+LPF = myproject.lpf
+SRC = myproject.v
+include ../../Makefile.inc
 ```
 
-## Toolchain Versions
-
-| Tool         | Version    | Source |
-|--------------|------------|--------|
-| Yosys        | 0.44       | [YosysHQ/yosys](https://github.com/YosysHQ/yosys) |
-| nextpnr      | 0.7        | [YosysHQ/nextpnr](https://github.com/YosysHQ/nextpnr) |
-| IceStorm     | 1.1        | [YosysHQ/icestorm](https://github.com/YosysHQ/icestorm) |
-| Icarus Verilog | apt (22.04) | Simulation only |
-| Base image   | Ubuntu 22.04 | |
+Build output goes to `<board>/build/<project_name>/`. Top module is always named `top`.

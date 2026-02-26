@@ -1,0 +1,7 @@
+services:
+  fpga:
+    build: .
+    volumes:
+      - .:/workspace
+      - ./build:/build
+    working_dir: /workspace

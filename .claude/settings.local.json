@@ -11,7 +11,14 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:pages.hmc.edu)",
       "WebFetch(domain:iot-kmutnb.github.io)",
-      "WebFetch(domain:gojimmypi.github.io)"
+      "WebFetch(domain:gojimmypi.github.io)",
+      "Bash(/Users/tom/projects/fpga/flash.sh:*)",
+      "Bash(chmod:*)",
+      "Bash(diskutil list:*)",
+      "Bash(dd:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

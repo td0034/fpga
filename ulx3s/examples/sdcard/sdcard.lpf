@@ -1,0 +1,64 @@
+# ULX3S SD Card WAV Player — Pin Constraints
+# Subset of ulx3s.lpf for: clock, LEDs, SD card (SPI mode), audio DAC
+
+# 25 MHz oscillator
+LOCATE COMP "clk" SITE "G2";
+IOBUF PORT "clk" PULLMODE=NONE IO_TYPE=LVCMOS33;
+FREQUENCY PORT "clk" 25 MHZ;
+
+# 8 LEDs (active high, LVCMOS33, 4mA drive)
+LOCATE COMP "led[0]" SITE "B2";
+LOCATE COMP "led[1]" SITE "C2";
+LOCATE COMP "led[2]" SITE "C1";
+LOCATE COMP "led[3]" SITE "D2";
+LOCATE COMP "led[4]" SITE "D1";
+LOCATE COMP "led[5]" SITE "E2";
+LOCATE COMP "led[6]" SITE "E1";
+LOCATE COMP "led[7]" SITE "H3";
+IOBUF PORT "led[0]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[1]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[2]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[3]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[4]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[5]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[6]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[7]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+
+# SD card (SPI mode)
+#   sd_clk  = SPI CLK    (active output)
+#   sd_cmd  = SPI MOSI   (active output)
+#   sd_d0   = SPI MISO   (input — directly from card)
+#   sd_d3   = SPI CS_n   (active output — directly active low chip select)
+#
+# sd_d[1] and sd_d[2] are unused in SPI mode. The SD spec recommends they
+# be held high during SPI operation; the board's internal pullups handle this.
+LOCATE COMP "sd_clk" SITE "H2";
+LOCATE COMP "sd_cmd" SITE "J1";
+LOCATE COMP "sd_d0" SITE "J3";
+LOCATE COMP "sd_d3" SITE "K2";
+IOBUF PORT "sd_clk" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "sd_cmd" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "sd_d0" PULLMODE=UP IO_TYPE=LVCMOS33;
+IOBUF PORT "sd_d3" PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;
+
+# Buttons
+LOCATE COMP "btn_fire1" SITE "R1";
+IOBUF PORT "btn_fire1" PULLMODE=DOWN IO_TYPE=LVCMOS33;
+
+# Audio jack (4-bit resistor DAC per channel, 3.5mm output)
+LOCATE COMP "audio_l[0]" SITE "E4";
+LOCATE COMP "audio_l[1]" SITE "D3";
+LOCATE COMP "audio_l[2]" SITE "C3";
+LOCATE COMP "audio_l[3]" SITE "B3";
+LOCATE COMP "audio_r[0]" SITE "A3";
+LOCATE COMP "audio_r[1]" SITE "B5";
+LOCATE COMP "audio_r[2]" SITE "D5";
+LOCATE COMP "audio_r[3]" SITE "C5";
+IOBUF PORT "audio_l[0]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "audio_l[1]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "audio_l[2]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "audio_l[3]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "audio_r[0]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "audio_r[1]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "audio_r[2]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "audio_r[3]" PULLMODE=NONE IO_TYPE=LVCMOS33 DRIVE=4;
