@@ -102,13 +102,17 @@ DIN  ──X─┤ MSB-1 ┤ MSB-2 ┤ MSB-3 ... ─────X─────
 | Parameter | Formula | Value |
 |-----------|---------|-------|
 | Sample rate (fs) | — | 44,100 Hz |
-| Bits per frame | 2 channels × 32 bits | 64 bits |
-| BCK frequency | fs × 64 | 2,822,400 Hz |
+| Bits per frame (64fs) | 2 channels × 32 bits | 64 bits |
+| Bits per frame (32fs) | 2 channels × 16 bits | 32 bits |
+| BCK frequency (64fs) | fs × 64 | 2,822,400 Hz |
+| BCK frequency (32fs) | fs × 32 | 1,411,200 Hz |
 | LRCK frequency | fs | 44,100 Hz |
-| BCK period | 1 / 2.8224 MHz | ~354 ns |
 
-**Note:** I2S convention uses 32 BCK cycles per channel even for 16-bit data.
-The extra 16 cycles are zero-padded. This gives a clean 64× BCK-to-fs ratio.
+**PCM5102 PLL mode restriction (SCK=GND):** In 3-wire PLL mode, the
+PCM5102 only supports BCK at **32fs or 64fs**. It does NOT support 48fs or
+128fs in PLL mode. For 16-bit audio, 32fs is the minimum (exactly 16 BCK
+cycles per channel). 64fs (32 BCK/channel, zero-padded) is more common
+and recommended for compatibility.
 
 ### Clock Generation from 25 MHz
 
@@ -136,13 +140,21 @@ noisy digital systems), so this works well in practice.
 
 **Option C — ECP5 PLL:**
 
-The ECP5 has PLLs that can multiply/divide the input clock. However,
-44.1 kHz multiples from 25 MHz are not achievable with integer ratios:
-- 25 MHz × 4 / 89 = 1.1236 MHz ≈ not close enough
-- No integer M/D pair gives exactly 11.2896 MHz or 2.8224 MHz
+The ECP5 EHXPLLL can multiply/divide the input clock. Exact 44.1 kHz
+multiples from 25 MHz are not achievable, but close approximations exist:
 
-The fractional accumulator approach (Option B) is simpler and sufficient
-given the PCM5102 has its own PLL. **PLL is unnecessary for this design.**
+| Error | Output MHz | CLKI_DIV | CLKFB_DIV | CLKOP_DIV | CLKOS_DIV | VCO MHz |
+|-------|-----------|----------|-----------|-----------|-----------|---------|
+| 64 ppm | 11.2903 | 1 | 28 | 1 | 62 | 700 |
+| 0.3 ppm | 11.2896 | 83 | 22 | 92 | 54 | 610 |
+
+The 64 ppm option (simple mode, high PFD=25 MHz) is more robust. The
+0.3 ppm option has very low PFD (0.3 MHz) which may increase jitter,
+though for audio this is unlikely to matter.
+
+However, since the PCM5102 has its own internal PLL and derives MCLK
+from BCK when SCK=GND, **the FPGA PLL is unnecessary for this design.**
+The fractional accumulator approach (Option B) is simpler and sufficient.
 
 ### Recommended: Option B with the existing sample rate accumulator pattern
 
@@ -218,6 +230,11 @@ module i2s_tx (
 4. **LRCK** — toggles every 32 BCK cycles
 5. **DIN** — shifts out MSB-first on BCK falling edge, 1 cycle delayed from
    LRCK transition (standard I2S format)
+
+**IMPORTANT: BCK must be continuous.** The PCM5102 does not support clock
+gating (stopping BCK after N bits per frame). If BCK/LRCK halt LOW for
+>1 second, the device enters power-down mode. If BCK/LRCK relationship is
+invalid for >4 LRCK periods, the device re-initializes and mutes output.
 
 ### Timing detail:
 
