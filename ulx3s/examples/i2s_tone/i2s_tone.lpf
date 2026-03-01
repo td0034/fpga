@@ -1,0 +1,40 @@
+LOCATE COMP "clk" SITE "G2";
+IOBUF PORT "clk" IO_TYPE=LVCMOS33;
+FREQUENCY PORT "clk" 25 MHZ;
+
+# PCM5102A on GN0–GN7 (active-low accent on J1 header, left column)
+LOCATE COMP "pcm_flt" SITE "C11";  # GN0 — filter select
+LOCATE COMP "pcm_dmp" SITE "A11";  # GN1 — de-emphasis
+LOCATE COMP "pcm_scl" SITE "B10";  # GN2 — system clock
+LOCATE COMP "pcm_bck" SITE "C10";  # GN3 — I2S bit clock
+LOCATE COMP "pcm_din" SITE "A8";   # GN4 — I2S serial data
+LOCATE COMP "pcm_lck" SITE "B8";   # GN5 — I2S word select (LRCK)
+LOCATE COMP "pcm_fmt" SITE "C7";   # GN6 — format select
+LOCATE COMP "pcm_xmt" SITE "B6";   # GN7 — mute control (high=unmute)
+
+IOBUF PORT "pcm_flt" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "pcm_dmp" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "pcm_scl" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "pcm_bck" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "pcm_din" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "pcm_lck" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "pcm_fmt" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "pcm_xmt" IO_TYPE=LVCMOS33 DRIVE=4;
+
+# LEDs (active-high)
+LOCATE COMP "led[0]" SITE "B2";
+LOCATE COMP "led[1]" SITE "C2";
+LOCATE COMP "led[2]" SITE "C1";
+LOCATE COMP "led[3]" SITE "D2";
+LOCATE COMP "led[4]" SITE "D1";
+LOCATE COMP "led[5]" SITE "E2";
+LOCATE COMP "led[6]" SITE "E1";
+LOCATE COMP "led[7]" SITE "H3";
+IOBUF PORT "led[0]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[1]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[2]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[3]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[4]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[5]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[6]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "led[7]" IO_TYPE=LVCMOS33 DRIVE=4;
