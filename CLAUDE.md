@@ -22,7 +22,12 @@ Each board has its own subdirectory with Dockerfile, build system, and examples.
 - **LEDs:** 8 active-high LEDs (B2, C2, C1, D2, D1, E2, E1, H3)
 - **Buttons:** 7 buttons (PWR=D6, FIRE1=R1, FIRE2=T1, UP=R18, DOWN=V1, LEFT=U1, RIGHT=H16)
 - **Programmer:** openFPGALoader via USB (FTDI bridge)
-- **Audio:** 4-bit resistor DAC per channel on 3.5mm jack
+- **Audio (onboard):** 4-bit resistor DAC per channel on 3.5mm jack
+- **Audio (external):** PCM5102A DAC breakout on J1 header GN0–GN7:
+  - GN0 (C11) = FLT (LOW), GN1 (A11) = DMP (LOW), GN2 (B10) = SCL (LOW)
+  - GN3 (C10) = BCK, GN4 (A8) = DIN, GN5 (B8) = LCK
+  - GN6 (C7) = FMT (LOW), GN7 (B6) = XMT (HIGH=unmute)
+  - VCC → 3.3V, GND → GND (from J1 header pins 1–4)
 - **Serial:** UART via FTDI bridge (RXD=M1, TXD=L4)
 - **Toolchain:** Yosys 0.44, nextpnr-ecp5 0.7, Project Trellis, iverilog
 - **Pin mappings:** [emard/ulx3s](https://github.com/emard/ulx3s)
@@ -98,7 +103,9 @@ fpga/
     ├── ulx3s.lpf                 # Full board pin constraints
     ├── flash.sh                  # Host-side flash script (openFPGALoader)
     ├── examples/
-    │   └── blinky/               # 8-LED binary counter
+    │   ├── blinky/               # 8-LED binary counter
+    │   ├── i2s_tone/             # 440 Hz sine wave via I2S to PCM5102A
+    │   └── sdcard_i2s/           # SD card WAV player via I2S to PCM5102A
     └── build/                    # Build output
 ```
 
