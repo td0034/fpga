@@ -105,7 +105,9 @@ fpga/
     ├── examples/
     │   ├── blinky/               # 8-LED binary counter
     │   ├── i2s_tone/             # 440 Hz sine wave via I2S to PCM5102A
-    │   └── sdcard_i2s/           # SD card WAV player via I2S to PCM5102A
+    │   ├── sdcard_i2s/           # SD card WAV player via I2S to PCM5102A
+    │   ├── i2s_passthrough/      # ADC→DAC I2S passthrough (PCM1808 + PCM5102A)
+    │   └── oled_wave/            # SD WAV player + I2C OLED waveform display
     └── build/                    # Build output
 ```
 
